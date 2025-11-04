@@ -1,0 +1,52 @@
+package web;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+
+public class ButtonEditor extends DefaultCellEditor {
+    private JButton button;
+    private ArrayList<Plato> listaPlatos;
+    private Carrito carrito;
+    private JTable table;
+    private int fila;
+
+    public ButtonEditor(JCheckBox checkBox, ArrayList<Plato> listaPlatos, Carrito carrito, JTable table) {
+        super(checkBox);
+        this.listaPlatos = listaPlatos;
+        this.carrito = carrito;
+        this.table = table;
+
+        button = new JButton();
+        button.setOpaque(true);
+        button.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                fireEditingStopped();
+                int cantidad = 1;
+                try {
+                    cantidad = Integer.parseInt(table.getValueAt(fila, 2).toString());
+                    if (cantidad < 1) cantidad = 1;
+                } catch (Exception ex) {
+                    cantidad = 1;
+                }
+                carrito.agregarPlato(listaPlatos.get(fila), cantidad);
+                JOptionPane.showMessageDialog(table, listaPlatos.get(fila).getNombre() + " x" + cantidad + " agregado!");
+            }
+        });
+    }
+
+    @Override
+    public Component getTableCellEditorComponent(JTable table, Object value,
+                                                 boolean isSelected, int row, int column) {
+        fila = row;
+        button.setText("Agregar");
+        return button;
+    }
+
+    @Override
+    public Object getCellEditorValue() {
+        return "Agregar";
+    }
+}
