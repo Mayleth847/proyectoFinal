@@ -1,0 +1,26 @@
+package web;
+import java.util.ArrayList;
+
+public class Carrito {
+    private ArrayList<ItemCarrito> items = new ArrayList<>();
+
+    public void agregarPlato(Plato plato, int cantidad) {
+        for (ItemCarrito ic : items) {
+            if (ic.getPlato().getNombre().equals(plato.getNombre())) {
+                ic.sumarCantidad(cantidad);
+                return;
+            }
+        }
+        items.add(new ItemCarrito(plato, cantidad));
+    }
+
+    public ArrayList<ItemCarrito> getItems() { return items; }
+
+    public boolean estaVacio() { return items.isEmpty(); }
+
+    public double getTotal() {
+        double total = 0;
+        for (ItemCarrito ic : items) total += ic.getSubtotal();
+        return total;
+    }
+}
