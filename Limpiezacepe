@@ -1,0 +1,484 @@
+package Hotelcp;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+
+// Clase principal
+public class SistemaLimpiezaHotelCP {
+    public static void main(String[] args) {
+        GestorLimpieza gestor = new GestorLimpieza();
+        gestor.iniciarSistema();
+    }
+}
+
+// Enumeraciones
+enum EstadoHabitacion {
+    LIMPIA, SUCIA, EN_LIMPIEZA, MANTENIMIENTO
+}
+
+enum TipoHabitacion {
+    INDIVIDUAL, DOBLE, SUITE, PRESIDENCIAL
+}
+
+enum PrioridadLimpieza {
+    ALTA, MEDIA, BAJA
+}
+
+// Clase Habitacion
+class Habitacion {
+    private String numero;
+    private TipoHabitacion tipo;
+    private EstadoHabitacion estado;
+    private boolean ocupada;
+    private LocalDateTime ultimaLimpieza;
+    
+    public Habitacion(String numero, TipoHabitacion tipo) {
+        this.numero = numero;
+        this.tipo = tipo;
+        this.estado = EstadoHabitacion.LIMPIA;
+        this.ocupada = false;
+        this.ultimaLimpieza = LocalDateTime.now();
+    }
+    
+    public String getNumero() { return numero; }
+    public TipoHabitacion getTipo() { return tipo; }
+    public EstadoHabitacion getEstado() { return estado; }
+    public void setEstado(EstadoHabitacion estado) { this.estado = estado; }
+    public boolean isOcupada() { return ocupada; }
+    public void setOcupada(boolean ocupada) { this.ocupada = ocupada; }
+    public LocalDateTime getUltimaLimpieza() { return ultimaLimpieza; }
+    public void setUltimaLimpieza(LocalDateTime ultimaLimpieza) { 
+        this.ultimaLimpieza = ultimaLimpieza; 
+    }
+    
+    @Override
+    public String toString() {
+        return String.format("Hab %s [%s] - Estado: %s - %s", 
+            numero, tipo, estado, ocupada ? "Ocupada" : "Disponible");
+    }
+}
+
+// Clase Personal de Limpieza
+class PersonalLimpieza {
+    private String id;
+    private String nombre;
+    private boolean disponible;
+    private List<TareaLimpieza> tareasAsignadas;
+    
+    public PersonalLimpieza(String id, String nombre) {
+        this.id = id;
+        this.nombre = nombre;
+        this.disponible = true;
+        this.tareasAsignadas = new ArrayList<>();
+    }
+    
+    public String getId() { return id; }
+    public String getNombre() { return nombre; }
+    public boolean isDisponible() { return disponible; }
+    public void setDisponible(boolean disponible) { this.disponible = disponible; }
+    public List<TareaLimpieza> getTareasAsignadas() { return tareasAsignadas; }
+    
+    public void asignarTarea(TareaLimpieza tarea) {
+        tareasAsignadas.add(tarea);
+        if (tareasAsignadas.size() >= 5) {
+            disponible = false;
+        }
+    }
+    
+    public void completarTarea(TareaLimpieza tarea) {
+        tareasAsignadas.remove(tarea);
+        disponible = true;
+    }
+    
+    @Override
+    public String toString() {
+        return String.format("%s - %s (Tareas: %d) %s", 
+            id, nombre, tareasAsignadas.size(), 
+            disponible ? "[Disponible]" : "[Ocupado]");
+    }
+}
+
+// Clase Tarea de Limpieza
+class TareaLimpieza {
+    private String id;
+    private Habitacion habitacion;
+    private PersonalLimpieza personal;
+    private PrioridadLimpieza prioridad;
+    private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaInicio;
+    private LocalDateTime fechaFinalizacion;
+    private boolean completada;
+    private String observaciones;
+    
+    public TareaLimpieza(String id, Habitacion habitacion, PrioridadLimpieza prioridad) {
+        this.id = id;
+        this.habitacion = habitacion;
+        this.prioridad = prioridad;
+        this.fechaCreacion = LocalDateTime.now();
+        this.completada = false;
+        this.observaciones = "";
+    }
+    
+    public String getId() { return id; }
+    public Habitacion getHabitacion() { return habitacion; }
+    public PersonalLimpieza getPersonal() { return personal; }
+    public void setPersonal(PersonalLimpieza personal) { this.personal = personal; }
+    public PrioridadLimpieza getPrioridad() { return prioridad; }
+    public boolean isCompletada() { return completada; }
+    public LocalDateTime getFechaCreacion() { return fechaCreacion; }
+    
+    public void iniciarTarea() {
+        fechaInicio = LocalDateTime.now();
+        habitacion.setEstado(EstadoHabitacion.EN_LIMPIEZA);
+    }
+    
+    public void completarTarea(String observaciones) {
+        this.completada = true;
+        this.fechaFinalizacion = LocalDateTime.now();
+        this.observaciones = observaciones;
+        habitacion.setEstado(EstadoHabitacion.LIMPIA);
+        habitacion.setUltimaLimpieza(fechaFinalizacion);
+        if (personal != null) {
+            personal.completarTarea(this);
+        }
+    }
+    
+    @Override
+    public String toString() {
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("HH:mm");
+        return String.format("Tarea %s - Hab %s [%s] - Creada: %s %s", 
+            id, habitacion.getNumero(), prioridad, 
+            fechaCreacion.format(fmt),
+            completada ? "✓ COMPLETADA" : "⧗ Pendiente");
+    }
+}
+
+// Gestor Principal del Sistema
+class GestorLimpieza {
+    private List<Habitacion> habitaciones;
+    private List<PersonalLimpieza> personal;
+    private List<TareaLimpieza> tareas;
+    private Scanner scanner;
+    private int contadorTareas;
+    
+    public GestorLimpieza() {
+        habitaciones = new ArrayList<>();
+        personal = new ArrayList<>();
+        tareas = new ArrayList<>();
+        scanner = new Scanner(System.in);
+        contadorTareas = 1;
+        inicializarDatos();
+    }
+    
+    private void inicializarDatos() {
+        // Crear habitaciones
+        for (int i = 1; i <= 3; i++) {
+            habitaciones.add(new Habitacion("10" + i, TipoHabitacion.INDIVIDUAL));
+            habitaciones.add(new Habitacion("20" + i, TipoHabitacion.DOBLE));
+        }
+        habitaciones.add(new Habitacion("301", TipoHabitacion.SUITE));
+        habitaciones.add(new Habitacion("401", TipoHabitacion.PRESIDENCIAL));
+        
+        // Crear personal
+        personal.add(new PersonalLimpieza("L001", "María González"));
+        personal.add(new PersonalLimpieza("L002", "Juan Pérez"));
+        personal.add(new PersonalLimpieza("L003", "Ana Martínez"));
+        
+        // Simular algunas habitaciones sucias
+        habitaciones.get(0).setEstado(EstadoHabitacion.SUCIA);
+        habitaciones.get(2).setEstado(EstadoHabitacion.SUCIA);
+        habitaciones.get(5).setEstado(EstadoHabitacion.SUCIA);
+    }
+    
+    public void iniciarSistema() {
+        System.out.println("╔═══════════════════════════════════════════╗");
+        System.out.println("║   SISTEMA DE LIMPIEZA - HOTEL CP        ║");
+        System.out.println("╚═══════════════════════════════════════════╝\n");
+        
+        boolean salir = false;
+        while (!salir) {
+            mostrarMenu();
+            int opcion = leerOpcion();
+            
+            switch (opcion) {
+                case 1: verEstadoHabitaciones(); break;
+                case 2: crearTareaLimpieza(); break;
+                case 3: asignarTarea(); break;
+                case 4: iniciarLimpieza(); break;
+                case 5: completarLimpieza(); break;
+                case 6: verTareasPendientes(); break;
+                case 7: verPersonalDisponible(); break;
+                case 8: generarReporte(); break;
+                case 9: cambiarEstadoHabitacion(); break;
+                case 0: salir = true; break;
+                default: System.out.println("⚠ Opción inválida");
+            }
+        }
+        
+        System.out.println("\n✓ Sistema cerrado. ¡Hasta luego!");
+        scanner.close();
+    }
+    
+    private void mostrarMenu() {
+        System.out.println("\n┌─────────────── MENÚ PRINCIPAL ───────────────┐");
+        System.out.println("│ 1. Ver estado de habitaciones               │");
+        System.out.println("│ 2. Crear tarea de limpieza                  │");
+        System.out.println("│ 3. Asignar tarea a personal                 │");
+        System.out.println("│ 4. Iniciar limpieza                         │");
+        System.out.println("│ 5. Completar limpieza                       │");
+        System.out.println("│ 6. Ver tareas pendientes                    │");
+        System.out.println("│ 7. Ver personal disponible                  │");
+        System.out.println("│ 8. Generar reporte                          │");
+        System.out.println("│ 9. Cambiar estado de habitación             │");
+        System.out.println("│ 0. Salir                                    │");
+        System.out.println("└──────────────────────────────────────────────┘");
+        System.out.print("Seleccione una opción: ");
+    }
+    
+    private int leerOpcion() {
+        try {
+            return scanner.nextInt();
+        } catch (Exception e) {
+            scanner.nextLine();
+            return -1;
+        } finally {
+            scanner.nextLine();
+        }
+    }
+    
+    private void verEstadoHabitaciones() {
+        System.out.println("\n═══ ESTADO DE HABITACIONES ═══");
+        for (Habitacion hab : habitaciones) {
+            System.out.println(hab);
+        }
+    }
+    
+    private void crearTareaLimpieza() {
+        System.out.println("\n═══ CREAR TAREA DE LIMPIEZA ═══");
+        System.out.print("Número de habitación: ");
+        String numHab = scanner.nextLine();
+        
+        Habitacion hab = buscarHabitacion(numHab);
+        if (hab == null) {
+            System.out.println("⚠ Habitación no encontrada");
+            return;
+        }
+        
+        System.out.println("Prioridad (1=ALTA, 2=MEDIA, 3=BAJA): ");
+        int prioridad = leerOpcion();
+        PrioridadLimpieza prior = PrioridadLimpieza.MEDIA;
+        
+        if (prioridad == 1) prior = PrioridadLimpieza.ALTA;
+        else if (prioridad == 3) prior = PrioridadLimpieza.BAJA;
+        
+        String idTarea = "T" + String.format("%03d", contadorTareas++);
+        TareaLimpieza tarea = new TareaLimpieza(idTarea, hab, prior);
+        tareas.add(tarea);
+        hab.setEstado(EstadoHabitacion.SUCIA);
+        
+        System.out.println("✓ Tarea creada: " + tarea);
+    }
+    
+    private void asignarTarea() {
+        System.out.println("\n═══ ASIGNAR TAREA ═══");
+        
+        List<TareaLimpieza> pendientes = obtenerTareasPendientes();
+        if (pendientes.isEmpty()) {
+            System.out.println("⚠ No hay tareas pendientes");
+            return;
+        }
+        
+        System.out.println("Tareas disponibles:");
+        for (int i = 0; i < pendientes.size(); i++) {
+            System.out.println((i + 1) + ". " + pendientes.get(i));
+        }
+        
+        System.out.print("Seleccione tarea: ");
+        int idx = leerOpcion() - 1;
+        if (idx < 0 || idx >= pendientes.size()) {
+            System.out.println("⚠ Selección inválida");
+            return;
+        }
+        
+        TareaLimpieza tarea = pendientes.get(idx);
+        
+        System.out.println("\nPersonal disponible:");
+        for (int i = 0; i < personal.size(); i++) {
+            System.out.println((i + 1) + ". " + personal.get(i));
+        }
+        
+        System.out.print("Seleccione personal: ");
+        int idxPersonal = leerOpcion() - 1;
+        if (idxPersonal < 0 || idxPersonal >= personal.size()) {
+            System.out.println("⚠ Selección inválida");
+            return;
+        }
+        
+        PersonalLimpieza p = personal.get(idxPersonal);
+        tarea.setPersonal(p);
+        p.asignarTarea(tarea);
+        
+        System.out.println("✓ Tarea asignada a " + p.getNombre());
+    }
+    
+    private void iniciarLimpieza() {
+        System.out.println("\n═══ INICIAR LIMPIEZA ═══");
+        List<TareaLimpieza> pendientes = obtenerTareasAsignadas();
+        
+        if (pendientes.isEmpty()) {
+            System.out.println("⚠ No hay tareas asignadas para iniciar");
+            return;
+        }
+        
+        for (int i = 0; i < pendientes.size(); i++) {
+            System.out.println((i + 1) + ". " + pendientes.get(i));
+        }
+        
+        System.out.print("Seleccione tarea: ");
+        int idx = leerOpcion() - 1;
+        if (idx >= 0 && idx < pendientes.size()) {
+            pendientes.get(idx).iniciarTarea();
+            System.out.println("✓ Limpieza iniciada");
+        }
+    }
+    
+    private void completarLimpieza() {
+        System.out.println("\n═══ COMPLETAR LIMPIEZA ═══");
+        List<TareaLimpieza> enProceso = obtenerTareasEnProceso();
+        
+        if (enProceso.isEmpty()) {
+            System.out.println("⚠ No hay limpiezas en proceso");
+            return;
+        }
+        
+        for (int i = 0; i < enProceso.size(); i++) {
+            System.out.println((i + 1) + ". " + enProceso.get(i));
+        }
+        
+        System.out.print("Seleccione tarea: ");
+        int idx = leerOpcion() - 1;
+        if (idx >= 0 && idx < enProceso.size()) {
+            System.out.print("Observaciones: ");
+            String obs = scanner.nextLine();
+            enProceso.get(idx).completarTarea(obs);
+            System.out.println("✓ Limpieza completada");
+        }
+    }
+    
+    private void verTareasPendientes() {
+        System.out.println("\n═══ TAREAS PENDIENTES ═══");
+        List<TareaLimpieza> pendientes = obtenerTareasPendientes();
+        
+        if (pendientes.isEmpty()) {
+            System.out.println("✓ No hay tareas pendientes");
+        } else {
+            for (TareaLimpieza t : pendientes) {
+                System.out.println(t);
+            }
+        }
+    }
+    
+    private void verPersonalDisponible() {
+        System.out.println("\n═══ PERSONAL DE LIMPIEZA ═══");
+        for (PersonalLimpieza p : personal) {
+            System.out.println(p);
+        }
+    }
+    
+    private void generarReporte() {
+        System.out.println("\n╔═══════════════════════════════════════════╗");
+        System.out.println("║         REPORTE DE LIMPIEZA              ║");
+        System.out.println("╚═══════════════════════════════════════════╝");
+        
+        int limpias = 0, sucias = 0, enLimpieza = 0;
+        for (Habitacion h : habitaciones) {
+            switch (h.getEstado()) {
+                case LIMPIA: limpias++; break;
+                case SUCIA: sucias++; break;
+                case EN_LIMPIEZA: enLimpieza++; break;
+            }
+        }
+        
+        System.out.println("\n► ESTADÍSTICAS DE HABITACIONES:");
+        System.out.println("  • Total habitaciones: " + habitaciones.size());
+        System.out.println("  • Limpias: " + limpias);
+        System.out.println("  • Sucias: " + sucias);
+        System.out.println("  • En limpieza: " + enLimpieza);
+        
+        long completadas = tareas.stream().filter(TareaLimpieza::isCompletada).count();
+        long pendientes = tareas.size() - completadas;
+        
+        System.out.println("\n► TAREAS:");
+        System.out.println("  • Total tareas: " + tareas.size());
+        System.out.println("  • Completadas: " + completadas);
+        System.out.println("  • Pendientes: " + pendientes);
+        
+        System.out.println("\n► PERSONAL:");
+        long disponibles = personal.stream().filter(PersonalLimpieza::isDisponible).count();
+        System.out.println("  • Total personal: " + personal.size());
+        System.out.println("  • Disponibles: " + disponibles);
+    }
+    
+    private void cambiarEstadoHabitacion() {
+        System.out.println("\n═══ CAMBIAR ESTADO HABITACIÓN ═══");
+        System.out.print("Número de habitación: ");
+        String num = scanner.nextLine();
+        
+        Habitacion hab = buscarHabitacion(num);
+        if (hab == null) {
+            System.out.println("⚠ Habitación no encontrada");
+            return;
+        }
+        
+        System.out.println("Estado actual: " + hab.getEstado());
+        System.out.println("1. LIMPIA  2. SUCIA  3. EN_LIMPIEZA  4. MANTENIMIENTO");
+        System.out.print("Nuevo estado: ");
+        int opcion = leerOpcion();
+        
+        EstadoHabitacion[] estados = EstadoHabitacion.values();
+        if (opcion > 0 && opcion <= estados.length) {
+            hab.setEstado(estados[opcion - 1]);
+            System.out.println("✓ Estado actualizado");
+        }
+    }
+    
+    private Habitacion buscarHabitacion(String numero) {
+        return habitaciones.stream()
+            .filter(h -> h.getNumero().equals(numero))
+            .findFirst()
+            .orElse(null);
+    }
+    
+    private List<TareaLimpieza> obtenerTareasPendientes() {
+        List<TareaLimpieza> pendientes = new ArrayList<>();
+        for (TareaLimpieza t : tareas) {
+            if (!t.isCompletada() && t.getPersonal() == null) {
+                pendientes.add(t);
+            }
+        }
+        return pendientes;
+    }
+    
+    private List<TareaLimpieza> obtenerTareasAsignadas() {
+        List<TareaLimpieza> asignadas = new ArrayList<>();
+        for (TareaLimpieza t : tareas) {
+            if (!t.isCompletada() && t.getPersonal() != null && 
+                t.getHabitacion().getEstado() != EstadoHabitacion.EN_LIMPIEZA) {
+                asignadas.add(t);
+            }
+        }
+        return asignadas;
+    }
+    
+    private List<TareaLimpieza> obtenerTareasEnProceso() {
+        List<TareaLimpieza> enProceso = new ArrayList<>();
+        for (TareaLimpieza t : tareas) {
+            if (!t.isCompletada() && 
+                t.getHabitacion().getEstado() == EstadoHabitacion.EN_LIMPIEZA) {
+                enProceso.add(t);
+            }
+        }
+        return enProceso;
+    }
+}
