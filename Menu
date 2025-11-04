@@ -1,0 +1,25 @@
+package web;
+
+import java.util.ArrayList;
+
+public class Menu {
+    private ArrayList<Plato> platos;
+
+    public Menu() {
+        platos = new ArrayList<>();
+        // Ejemplo de platos
+        platos.add(new Plato("Hamburguesa", 5.5, "americana"));
+        platos.add(new Plato("Pizza", 8.0, "italiana"));
+        platos.add(new Plato("Taco", 3.5, "mexicana"));
+        platos.add(new Plato("Sushi", 10.0, "japonesa"));
+        platos.add(new Plato("Chow Mein", 7.0, "china"));
+    }
+
+    public ArrayList<Plato> getPlatosPorTipo(String tipo) {
+        ArrayList<Plato> lista = new ArrayList<>();
+        for (Plato p : platos) {
+            if (p.getTipo().equalsIgnoreCase(tipo)) lista.add(p);
+        }
+        return lista;
+    }
+}
