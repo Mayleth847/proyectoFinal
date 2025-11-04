@@ -1,0 +1,215 @@
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+
+/**
+ * Representa una reserva dentro del sistema del hotel.
+ * Contiene la información del cliente, la habitación, fechas y estado.
+ */
+public class Reserva {
+    private Cliente cliente;
+    private Habitacion habitacion;
+    private LocalDate fechaIngreso;
+    private LocalDate fechaSalida;
+    private String estado;
+    private boolean pagado;
+    private double total;
+    private LocalDateTime fechaReserva;
+    private String codigoReserva;
+
+    /**
+     * Inicializa una reserva.
+     * @param cliente Objeto Cliente
+     * @param habitacion Objeto Habitacion
+     * @param fechaIngreso Fecha de ingreso
+     * @param fechaSalida Fecha de salida
+     */
+    public Reserva(Cliente cliente, Habitacion habitacion, LocalDate fechaIngreso, LocalDate fechaSalida) {
+        this.cliente = cliente;
+        this.habitacion = habitacion;
+        this.fechaIngreso = fechaIngreso;
+        this.fechaSalida = fechaSalida;
+        this.estado = "Pendiente"; // Pendiente, Activa, Finalizada, Cancelada
+        this.pagado = false;
+        this.fechaReserva = LocalDateTime.now();
+        this.codigoReserva = generarCodigo();
+        this.total = calcularTotal();
+    }
+
+    // ---------------- MÉTODOS PRINCIPALES ---------------- //
+
+    /**
+     * Calcula el total a pagar según las noches y el precio por noche de la habitación.
+     * @return Total a pagar
+     */
+    public double calcularTotal() {
+        long dias = ChronoUnit.DAYS.between(this.fechaIngreso, this.fechaSalida);
+        if (dias <= 0) {
+            dias = 1; // Mínimo una noche
+        }
+        return dias * this.habitacion.getPrecio();
+    }
+
+    /**
+     * Confirma la reserva, marcando la habitación como ocupada y cambiando el estado.
+     * @return true si se confirmó correctamente, false en caso contrario
+     */
+    public boolean confirmarReserva() {
+        if (!this.habitacion.isDisponible()) {
+            System.out.println("❌ La habitación " + this.habitacion.getNumero() + " no está disponible.");
+            return false;
+        }
+
+        this.habitacion.setDisponible(false);
+        this.estado = "Activa";
+        System.out.println("✅ Reserva confirmada para " + this.cliente.getNombre() + 
+                         " en la habitación " + this.habitacion.getNumero() + ".");
+        return true;
+    }
+
+    /**
+     * Marca la reserva como finalizada y libera la habitación.
+     */
+    public void finalizarReserva() {
+        this.estado = "Finalizada";
+        this.habitacion.setDisponible(true);
+        System.out.println("🏁 Reserva finalizada. Habitación " + this.habitacion.getNumero() + 
+                         " ahora disponible nuevamente.");
+    }
+
+    /**
+     * Cancela la reserva y libera la habitación si estaba ocupada.
+     */
+    public void cancelarReserva() {
+        if ("Cancelada".equals(this.estado)) {
+            System.out.println("⚠️ Esta reserva ya fue cancelada.");
+            return;
+        }
+        this.estado = "Cancelada";
+        this.habitacion.setDisponible(true);
+        System.out.println("❌ Reserva cancelada para " + this.cliente.getNombre() + 
+                         " (Hab. " + this.habitacion.getNumero() + ").");
+    }
+
+    /**
+     * Marca la reserva como pagada.
+     */
+    public void marcarPagada() {
+        if (this.pagado) {
+            System.out.println("💰 Esta reserva ya está pagada.");
+        } else {
+            this.pagado = true;
+            this.cliente.agregarPuntos(this.total);
+            System.out.println("💵 Reserva marcada como pagada por $" + this.total + ".");
+        }
+    }
+
+    /**
+     * Genera un código único de reserva (por ejemplo: RS-20251028123045-101).
+     * @return Código de reserva generado
+     */
+    private String generarCodigo() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        String fecha = LocalDateTime.now().format(formatter);
+        return "RS-" + fecha + "-" + this.habitacion.getNumero();
+    }
+
+    // ---------------- MÉTODOS AUXILIARES ---------------- //
+
+    /**
+     * Devuelve la información completa de la reserva.
+     * @return String con el detalle de la reserva
+     */
+    public String mostrarDetalle() {
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        
+        StringBuilder detalle = new StringBuilder();
+        detalle.append("📘 Código: ").append(this.codigoReserva).append("\n");
+        detalle.append("Cliente: ").append(this.cliente.getNombre())
+               .append(" (DNI: ").append(this.cliente.getDni()).append(")\n");
+        detalle.append("Habitación: ").append(this.habitacion.getNumero())
+               .append(" - ").append(this.habitacion.getTipo()).append("\n");
+        detalle.append("Desde: ").append(this.fechaIngreso.format(dateFormatter)).append("\n");
+        detalle.append("Hasta: ").append(this.fechaSalida.format(dateFormatter)).append("\n");
+        detalle.append("Total: $").append(this.total).append("\n");
+        detalle.append("Estado: ").append(this.estado).append("\n");
+        detalle.append("Pagado: ").append(this.pagado ? "Sí" : "No").append("\n");
+        detalle.append("Fecha de reserva: ").append(this.fechaReserva.format(dateTimeFormatter)).append("\n");
+        
+        return detalle.toString();
+    }
+
+    // ---------------- GETTERS Y SETTERS ---------------- //
+
+    public Cliente getCliente() {
+        return cliente;
+    }
+
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
+    }
+
+    public Habitacion getHabitacion() {
+        return habitacion;
+    }
+
+    public void setHabitacion(Habitacion habitacion) {
+        this.habitacion = habitacion;
+    }
+
+    public LocalDate getFechaIngreso() {
+        return fechaIngreso;
+    }
+
+    public void setFechaIngreso(LocalDate fechaIngreso) {
+        this.fechaIngreso = fechaIngreso;
+    }
+
+    public LocalDate getFechaSalida() {
+        return fechaSalida;
+    }
+
+    public void setFechaSalida(LocalDate fechaSalida) {
+        this.fechaSalida = fechaSalida;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
+
+    public boolean isPagado() {
+        return pagado;
+    }
+
+    public void setPagado(boolean pagado) {
+        this.pagado = pagado;
+    }
+
+    public double getTotal() {
+        return total;
+    }
+
+    public LocalDateTime getFechaReserva() {
+        return fechaReserva;
+    }
+
+    public String getCodigoReserva() {
+        return codigoReserva;
+    }
+
+    /**
+     * Representación corta de la reserva.
+     */
+    @Override
+    public String toString() {
+        String estadoPago = this.pagado ? "Pagado" : "Pendiente";
+        return "[" + this.codigoReserva + "] " + this.cliente.getNombre() + 
+               " - Hab. " + this.habitacion.getNumero() + " (" + this.habitacion.getTipo() + 
+               ") - " + this.estado + " - " + estadoPago;
+    }
