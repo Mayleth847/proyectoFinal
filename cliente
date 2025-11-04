@@ -1,0 +1,192 @@
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Clase que representa a un cliente del hotel.
+ * Contiene sus datos personales, reservas e historial de pagos.
+ */
+public class Cliente {
+    private String nombre;
+    private String dni;
+    private String telefono;
+    private String email;
+    private List<Reserva> reservas;
+    private int puntosCliente;
+    private LocalDateTime fechaRegistro;
+
+    /**
+     * Inicializa un cliente con su información básica.
+     * @param nombre Nombre completo del cliente
+     * @param dni Documento de identidad (único)
+     * @param telefono Número telefónico (opcional)
+     * @param email Correo electrónico (opcional)
+     */
+    public Cliente(String nombre, String dni, String telefono, String email) {
+        this.nombre = nombre;
+        this.dni = dni;
+        this.telefono = telefono;
+        this.email = email;
+        this.reservas = new ArrayList<>();
+        this.puntosCliente = 0;
+        this.fechaRegistro = LocalDateTime.now();
+    }
+
+    /**
+     * Constructor sobrecargado sin datos de contacto
+     */
+    public Cliente(String nombre, String dni) {
+        this(nombre, dni, null, null);
+    }
+
+    // ---------------- MÉTODOS PRINCIPALES ---------------- //
+
+    /**
+     * Agrega una reserva al historial del cliente.
+     * @param reserva Objeto de tipo Reserva
+     */
+    public void agregarReserva(Reserva reserva) {
+        this.reservas.add(reserva);
+        System.out.println("✅ Reserva agregada correctamente al cliente " + this.nombre + ".");
+    }
+
+    /**
+     * Muestra la información general del cliente.
+     * @return String con la información del cliente
+     */
+    public String mostrarInfo() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        String telefonoStr = (this.telefono != null) ? this.telefono : "No registrado";
+        String emailStr = (this.email != null) ? this.email : "No registrado";
+        
+        StringBuilder info = new StringBuilder();
+        info.append("👤 Cliente: ").append(this.nombre).append("\n");
+        info.append("DNI: ").append(this.dni).append("\n");
+        info.append("Teléfono: ").append(telefonoStr).append("\n");
+        info.append("Email: ").append(emailStr).append("\n");
+        info.append("Fecha de registro: ").append(this.fechaRegistro.format(formatter)).append("\n");
+        info.append("Reservas registradas: ").append(this.reservas.size()).append("\n");
+        info.append("Puntos acumulados: ").append(this.puntosCliente).append("\n");
+        
+        return info.toString();
+    }
+
+    /**
+     * Muestra el historial de reservas del cliente.
+     */
+    public void historialReservas() {
+        if (this.reservas.isEmpty()) {
+            System.out.println("❌ El cliente " + this.nombre + " no tiene reservas registradas.");
+            return;
+        }
+
+        System.out.println("📅 Historial de reservas de " + this.nombre + ":");
+        for (int i = 0; i < this.reservas.size(); i++) {
+            System.out.println("\nReserva " + (i + 1) + ":");
+            System.out.println(this.reservas.get(i));
+            System.out.println("----------------------------------------");
+        }
+    }
+
+    /**
+     * Agrega puntos al cliente en función del monto pagado.
+     * Cada $100 genera 1 punto.
+     * @param monto Monto del pago realizado
+     */
+    public void agregarPuntos(double monto) {
+        int puntos = (int) (monto / 100);
+        this.puntosCliente += puntos;
+        System.out.println("🏅 " + this.nombre + " ha ganado " + puntos + 
+                         " puntos (Total: " + this.puntosCliente + ").");
+    }
+
+    /**
+     * Permite al cliente canjear puntos por descuentos.
+     * @param puntosACanjear Cantidad de puntos que desea usar
+     * @return Descuento obtenido en dinero
+     */
+    public double canjearPuntos(int puntosACanjear) {
+        if (puntosACanjear <= 0) {
+            System.out.println("⚠️ Los puntos a canjear deben ser mayores que cero.");
+            return 0;
+        }
+
+        if (puntosACanjear > this.puntosCliente) {
+            System.out.println("❌ No tienes suficientes puntos para canjear.");
+            return 0;
+        }
+
+        // Cada punto equivale a $10 de descuento
+        double descuento = puntosACanjear * 10.0;
+        this.puntosCliente -= puntosACanjear;
+        System.out.println("💰 Has canjeado " + puntosACanjear + 
+                         " puntos por un descuento de $" + descuento + ".");
+        return descuento;
+    }
+
+    /**
+     * Verifica si el cliente tiene al menos un medio de contacto.
+     * @return true si tiene teléfono o email, false en caso contrario
+     */
+    public boolean validarContacto() {
+        if (this.telefono == null && this.email == null) {
+            System.out.println("⚠️ Cliente sin datos de contacto registrados.");
+            return false;
+        }
+        return true;
+    }
+
+    // ---------------- GETTERS Y SETTERS ---------------- //
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getDni() {
+        return dni;
+    }
+
+    public void setDni(String dni) {
+        this.dni = dni;
+    }
+
+    public String getTelefono() {
+        return telefono;
+    }
+
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public List<Reserva> getReservas() {
+        return reservas;
+    }
+
+    public int getPuntosCliente() {
+        return puntosCliente;
+    }
+
+    public LocalDateTime getFechaRegistro() {
+        return fechaRegistro;
+    }
+
+    /**
+     * Representación corta del cliente.
+     */
+    @Override
+    public String toString() {
+        return this.nombre + " (DNI: " + this.dni + ")";
+    }
