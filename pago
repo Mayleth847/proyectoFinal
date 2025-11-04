@@ -1,0 +1,160 @@
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
+
+/**
+ * Representa un pago asociado a una reserva en el sistema del hotel.
+ * Contiene la información sobre el monto, método de pago, fecha y estado.
+ */
+public class Pago {
+    // Constantes de clase
+    public static final List<String> METODOS_VALIDOS = Arrays.asList(
+        "Efectivo", "Tarjeta de Crédito", "Tarjeta de Débito", "Transferencia", "PayPal"
+    );
+    
+    public static final List<String> ESTADOS_VALIDOS = Arrays.asList(
+        "Pendiente", "Completado", "Reembolsado", "Cancelado"
+    );
+
+    // Atributos de instancia
+    private Reserva reserva;
+    private double monto;
+    private String metodoPago;
+    private LocalDateTime fechaPago;
+    private String estado;
+    private String idPago;
+
+    /**
+     * Constructor de la clase Pago.
+     * 
+     * @param reserva La reserva asociada al pago
+     * @param monto El monto total a pagar
+     * @param metodoPago Método utilizado para realizar el pago
+     */
+    public Pago(Reserva reserva, double monto, String metodoPago) {
+        this.reserva = reserva;
+        this.monto = monto;
+        this.metodoPago = METODOS_VALIDOS.contains(metodoPago) ? metodoPago : "Efectivo";
+        this.fechaPago = null;
+        this.estado = "Pendiente";
+        this.idPago = generarIdPago();
+    }
+
+    /**
+     * Genera un identificador único para el pago basado en la fecha y el número de habitación.
+     * 
+     * @return ID único del pago
+     */
+    private String generarIdPago() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        String timestamp = LocalDateTime.now().format(formatter);
+        return "PAGO-" + this.reserva.getHabitacion().getNumero() + "-" + timestamp;
+    }
+
+    /**
+     * Marca el pago como completado y registra la fecha de pago.
+     * 
+     * @throws Exception Si el pago ya fue realizado
+     */
+    public void realizarPago() throws Exception {
+        if ("Completado".equals(this.estado)) {
+            throw new Exception("El pago ya fue realizado.");
+        }
+        this.estado = "Completado";
+        this.fechaPago = LocalDateTime.now();
+    }
+
+    /**
+     * Marca el pago como reembolsado, en caso de cancelación o error.
+     * 
+     * @throws Exception Si el pago no está completado
+     */
+    public void reembolsarPago() throws Exception {
+        if (!"Completado".equals(this.estado)) {
+            throw new Exception("Solo los pagos completados pueden reembolsarse.");
+        }
+        this.estado = "Reembolsado";
+    }
+
+    /**
+     * Cancela el pago si aún no ha sido completado.
+     * 
+     * @throws Exception Si el pago ya fue completado
+     */
+    public void cancelarPago() throws Exception {
+        if ("Completado".equals(this.estado)) {
+            throw new Exception("No se puede cancelar un pago ya completado.");
+        }
+        this.estado = "Cancelado";
+    }
+
+    /**
+     * Devuelve un resumen con la información completa del pago.
+     * 
+     * @return String con los detalles del pago
+     */
+    public String mostrarDetalles() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        String fecha = (this.fechaPago != null) ? this.fechaPago.format(formatter) : "Sin registrar";
+        
+        StringBuilder detalles = new StringBuilder();
+        detalles.append("ID Pago: ").append(this.idPago).append("\n");
+        detalles.append("Reserva: ").append(this.reserva.getHabitacion().getNumero())
+                .append(" (").append(this.reserva.getCliente().getNombre()).append(")\n");
+        detalles.append("Método: ").append(this.metodoPago).append("\n");
+        detalles.append(String.format("Monto: $%.2f\n", this.monto));
+        detalles.append("Estado: ").append(this.estado).append("\n");
+        detalles.append("Fecha: ").append(fecha).append("\n");
+        
+        return detalles.toString();
+    }
+
+    // ---------------- GETTERS Y SETTERS ---------------- //
+
+    public Reserva getReserva() {
+        return reserva;
+    }
+
+    public void setReserva(Reserva reserva) {
+        this.reserva = reserva;
+    }
+
+    public double getMonto() {
+        return monto;
+    }
+
+    public void setMonto(double monto) {
+        this.monto = monto;
+    }
+
+    public String getMetodoPago() {
+        return metodoPago;
+    }
+
+    public void setMetodoPago(String metodoPago) {
+        if (METODOS_VALIDOS.contains(metodoPago)) {
+            this.metodoPago = metodoPago;
+        }
+    }
+
+    public LocalDateTime getFechaPago() {
+        return fechaPago;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public String getIdPago() {
+        return idPago;
+    }
+
+    /**
+     * Representación corta del pago.
+     */
+    @Override
+    public String toString() {
+        return String.format("[%s] %s - $%.2f (%s)", 
+                           this.estado, this.metodoPago, this.monto, this.idPago);
+    }
