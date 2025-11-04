@@ -1,35 +1,35 @@
 package Hotelcp;
 
+  private int idEmpleado;
+    private String nombre;
+    private String apellido;
+    private String puesto;         
+    private String area;            
+    private String turno;          
+    private double salarioMensual;
+    private boolean activo;        
 
 public class Empleado {
 
-    // Atributos
-    private int id;
-    private String nombre;
-    private String apellido;
-    private String puesto;
-    private double salarioMensual;
 
-    // Constructor vacío
-    public Empleado() {
-    }
-
-    // Constructor con parámetros
-    public Empleado(int id, String nombre, String apellido, String puesto, double salarioMensual) {
-        this.id = id;
+ 
+        this.idEmpleado = idEmpleado;
         this.nombre = nombre;
         this.apellido = apellido;
         this.puesto = puesto;
+        this.area = area;
+        this.turno = turno;
         this.salarioMensual = salarioMensual;
+        this.activo = activo;
     }
 
     // Getters y Setters
-    public int getId() {
-        return id;
+    public int getIdEmpleado() {
+        return idEmpleado;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setIdEmpleado(int idEmpleado) {
+        this.idEmpleado = idEmpleado;
     }
 
     public String getNombre() {
@@ -56,6 +56,22 @@ public class Empleado {
         this.puesto = puesto;
     }
 
+    public String getArea() {
+        return area;
+    }
+
+    public void setArea(String area) {
+        this.area = area;
+    }
+
+    public String getTurno() {
+        return turno;
+    }
+
+    public void setTurno(String turno) {
+        this.turno = turno;
+    }
+
     public double getSalarioMensual() {
         return salarioMensual;
     }
@@ -64,20 +80,39 @@ public class Empleado {
         this.salarioMensual = salarioMensual;
     }
 
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
+    }
+
     // Método para calcular salario anual
     public double calcularSalarioAnual() {
         return salarioMensual * 12;
     }
 
-    // Método toString para imprimir información del empleado
-    @Override
+    // Método para cambiar el turno
+    public void cambiarTurno(String nuevoTurno) {
+        this.turno = nuevoTurno;
+    }
+
+    // Método para desactivar al empleado (por ejemplo, si deja el trabajo)
+    public void desactivarEmpleado() {
+        this.activo = false; (
+    }
+
+
     public String toString() {
-        return "Empleado {" +
-                "id=" + id +
-                ", nombre='" + nombre + '\'' +
-                ", apellido='" + apellido + '\'' +
-                ", puesto='" + puesto + '\'' +
-                ", salarioMensual=" + salarioMensual +
+        return "EmpleadoHotel {" +
+                "ID=" + idEmpleado +
+                ", Nombre='" + nombre + " " + apellido + '\'' +
+                ", Puesto='" + puesto + '\'' +
+                ", Área='" + area + '\'' +
+                ", Turno='" + turno + '\'' +
+                ", SalarioMensual=" + salarioMensual +
+                ", Activo=" + (activo ? "Sí" : "No") +
                 '}';
     }
 }
