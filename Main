@@ -1,1 +1,110 @@
+package web;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.util.ArrayList;
+
+public class Main {
+    private JFrame frame;
+    private ArrayList<Plato> menu;
+    private Carrito carrito;
+
+    public Main() {
+        carrito = new Carrito();
+        menu = new ArrayList<>();
+        // Platos de todos los tipos
+        menu.add(new Plato("Hamburguesa", 5.5, "americana"));
+        menu.add(new Plato("Hot Dog", 3.5, "americana"));
+        menu.add(new Plato("Pizza", 8, "italiana"));
+        menu.add(new Plato("Pasta", 7, "italiana"));
+        menu.add(new Plato("Taco", 3.5, "mexicana"));
+        menu.add(new Plato("Burrito", 6, "mexicana"));
+        menu.add(new Plato("Sushi", 10, "japonesa"));
+        menu.add(new Plato("Ramen", 9, "japonesa"));
+        menu.add(new Plato("Chow Mein", 7, "china"));
+        menu.add(new Plato("Dumplings", 6, "china"));
+
+        frame = new JFrame("Comida Rápida Internacional");
+        frame.setSize(700, 400);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        mostrarMenu();
+        frame.setVisible(true);
+    }
+
+    private void mostrarMenu() {
+        JPanel panel = new JPanel(new GridLayout(3,2,10,10));
+        String[] tipos = {"americana","mexicana","japonesa","china","italiana"};
+
+        for(String tipo: tipos){
+            JButton btn = new JButton(tipo.substring(0,1).toUpperCase()+tipo.substring(1));
+            btn.addActionListener(e->mostrarPlatos(tipo));
+            panel.add(btn);
+        }
+
+        JButton btnCarrito = new JButton("Ver Carrito");
+        btnCarrito.addActionListener(e->mostrarCarrito());
+        panel.add(btnCarrito);
+
+        frame.getContentPane().removeAll();
+        frame.getContentPane().add(panel, BorderLayout.CENTER);
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    private void mostrarPlatos(String tipo){
+        ArrayList<Plato> lista = new ArrayList<>();
+        for(Plato p: menu) if(p.getTipo().equals(tipo)) lista.add(p);
+
+        String[] columnas = {"Nombre","Precio","Cantidad","Agregar"};
+        DefaultTableModel model = new DefaultTableModel(columnas,0){
+            public boolean isCellEditable(int row,int col){ return col==2||col==3; }
+        };
+
+        for(Plato p: lista){
+            model.addRow(new Object[]{p.getNombre(), "$"+p.getPrecio(), 1, "Agregar"});
+        }
+
+        JTable table = new JTable(model);
+        table.getColumn("Agregar").setCellRenderer(new ButtonRenderer());
+        table.getColumn("Agregar").setCellEditor(new ButtonEditor(new JCheckBox(), lista, carrito, table));
+
+        JScrollPane scroll = new JScrollPane(table);
+        JButton btnVolver = new JButton("Volver");
+        btnVolver.addActionListener(e->mostrarMenu());
+
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(scroll, BorderLayout.CENTER);
+        panel.add(btnVolver, BorderLayout.SOUTH);
+
+        frame.getContentPane().removeAll();
+        frame.getContentPane().add(panel, BorderLayout.CENTER);
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    private void mostrarCarrito(){
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+        if(carrito.estaVacio()) panel.add(new JLabel("El carrito está vacío"));
+        else{
+            for(ItemCarrito ic: carrito.getItems()) panel.add(new JLabel(ic.toString()));
+            panel.add(new JLabel("Total: $" + carrito.getTotal()));
+        }
+
+        JButton btnVolver = new JButton("Volver");
+        btnVolver.addActionListener(e->mostrarMenu());
+        panel.add(btnVolver);
+
+        frame.getContentPane().removeAll();
+        frame.getContentPane().add(panel);
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    public static void main(String[] args){
+        SwingUtilities.invokeLater(Main::new);
+    }
+}
 
