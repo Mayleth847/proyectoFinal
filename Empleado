@@ -1,4 +1,4 @@
-package com.empresa.modelo;
+package HotelCP;
 
 
 public class Empleado {
