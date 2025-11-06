@@ -1,0 +1,101 @@
+package Menu;
+
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import javax.swing.border.LineBorder;
+
+public class Portada extends JFrame {
+
+	private static final long serialVersionUID = 1L;
+	private JPanel contentPane;
+
+	public static void main(String[] args) {
+		EventQueue.invokeLater(() -> {
+			try {
+				Portada frame = new Portada();
+				frame.setVisible(true);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		});
+	}
+
+	public Portada() {
+		setTitle("🍔 La Casa del Snack - Bienvenido");
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setBounds(100, 100, 600, 400);
+		setLocationRelativeTo(null);
+		setResizable(false);
+
+		contentPane = new JPanel(new BorderLayout());
+		contentPane.setBackground(Color.BLACK);
+		setContentPane(contentPane);
+
+		// === LOGO CENTRADO ===
+		try {
+			JLabel lblLogo = new JLabel();
+			ImageIcon icono = new ImageIcon(getClass().getResource("/Imagenes/logo.jpg")); 
+			Image imagen = icono.getImage().getScaledInstance(250, 250, Image.SCALE_SMOOTH);
+			lblLogo.setIcon(new ImageIcon(imagen));
+			lblLogo.setHorizontalAlignment(SwingConstants.CENTER);
+			contentPane.add(lblLogo, BorderLayout.CENTER);
+		} catch (Exception e) {
+			JLabel lblError = new JLabel("⚠ No se encontró el logo", SwingConstants.CENTER);
+			lblError.setForeground(Color.WHITE);
+			lblError.setFont(new Font("Segoe UI", Font.BOLD, 18));
+			contentPane.add(lblError, BorderLayout.CENTER);
+		}
+
+		// === PANEL DE BOTONES INFERIOR ===
+		JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 40, 15));
+		panelBotones.setBackground(Color.BLACK);
+
+		JButton btnEntrar = new JButton("🍟 Entrar al Menú");
+		JButton btnSalir = new JButton("❌ Salir");
+
+		// === Estilo de botones ===
+		Font fuente = new Font("Segoe UI", Font.BOLD, 14);
+		Color naranja = new Color(255, 140, 0);
+
+		JButton[] botones = { btnEntrar, btnSalir };
+		for (JButton b : botones) {
+			b.setFont(fuente);
+			b.setFocusPainted(false);
+			b.setBackground(Color.WHITE);
+			b.setForeground(Color.BLACK);
+			b.setBorder(new LineBorder(naranja, 3));
+			b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+			b.addMouseListener(new MouseAdapter() {
+				public void mouseEntered(MouseEvent e) {
+					b.setBackground(naranja);
+					b.setForeground(Color.WHITE);
+				}
+
+				public void mouseExited(MouseEvent e) {
+					b.setBackground(Color.WHITE);
+					b.setForeground(Color.BLACK);
+				}
+			});
+		}
+
+		panelBotones.add(btnEntrar);
+		panelBotones.add(btnSalir);
+		contentPane.add(panelBotones, BorderLayout.SOUTH);
+
+		// === ACCIONES ===
+		btnEntrar.addActionListener(e -> {
+			dispose();
+			new MenuPrincipal().setVisible(true);
+		});
+
+		btnSalir.addActionListener(e -> {
+			int opcion = JOptionPane.showConfirmDialog(this, "¿Seguro que quieres salir?", "Salir",
+					JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+			if (opcion == JOptionPane.YES_OPTION) {
+				System.exit(0);
+			}
+		});
+	}
+}
