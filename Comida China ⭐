@@ -1,0 +1,160 @@
+package Comida;
+
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import Carrito.BaseDeDatos;
+import Menu.MenuPrincipal; // ✅ Importar el menú principal
+
+public class China extends JFrame {
+
+	private static final long serialVersionUID = 1L;
+	private JPanel contentPane;
+	private BaseDeDatos carrito = BaseDeDatos.getInstancia();
+
+	public China() {
+		setTitle("Comida China - LaCasaDelSnack");
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // ✅ No cierra todo el programa
+		setBounds(100, 100, 700, 500);
+		setLocationRelativeTo(null);
+
+		contentPane = new JPanel();
+		contentPane.setBackground(Color.WHITE);
+		contentPane.setBorder(new EmptyBorder(15, 15, 15, 15));
+		contentPane.setLayout(new BorderLayout(10, 10));
+		setContentPane(contentPane);
+
+		// ==== PANEL DE COMIDAS ====
+		JPanel panelComidas = new JPanel();
+		panelComidas.setBackground(Color.WHITE);
+		panelComidas.setLayout(new GridLayout(5, 1, 15, 15));
+		contentPane.add(panelComidas, BorderLayout.CENTER);
+
+		// ==== PLATILLOS ====
+		agregarPlatillo(panelComidas, "Arroz frito con verduras", "🍚", 65);
+		agregarPlatillo(panelComidas, "Chow Mein", "🍜", 70);
+		agregarPlatillo(panelComidas, "Rollitos primavera (2 pzas)", "🥢", 40);
+		agregarPlatillo(panelComidas, "Pollo agridulce", "🍗", 80);
+		agregarPlatillo(panelComidas, "Dumplings (6 pzas)", "🥟", 75);
+
+		// ==== BOTÓN REGRESAR ====
+		JPanel panelInferior = new JPanel();
+		panelInferior.setBackground(Color.WHITE);
+		JButton btnRegresar = new JButton("⬅ Regresar al Menú");
+		btnRegresar.setBackground(new Color(255, 140, 0));
+		btnRegresar.setForeground(Color.WHITE);
+		btnRegresar.setFont(new Font("Segoe UI", Font.BOLD, 14));
+		btnRegresar.setFocusPainted(false);
+		btnRegresar.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+		btnRegresar.addMouseListener(new MouseAdapter() {
+			public void mouseEntered(MouseEvent e) {
+				btnRegresar.setBackground(new Color(255, 165, 0));
+			}
+			public void mouseExited(MouseEvent e) {
+				btnRegresar.setBackground(new Color(255, 140, 0));
+			}
+		});
+		btnRegresar.addActionListener(e -> {
+			dispose(); // ✅ Cierra solo esta ventana
+			new MenuPrincipal().setVisible(true); // ✅ Regresa al menú
+		});
+		panelInferior.add(btnRegresar);
+		contentPane.add(panelInferior, BorderLayout.SOUTH);
+	}
+
+	// ==== MÉTODO PARA CREAR PLATILLOS ====
+	private void agregarPlatillo(JPanel panel, String nombre, String icono, double precio) {
+		JPanel panelItem = new JPanel(new BorderLayout(10, 10));
+		panelItem.setBackground(Color.WHITE);
+		panelItem.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+
+		// Imagen / Ícono
+		JLabel lblImagen = new JLabel(icono, SwingConstants.CENTER);
+		lblImagen.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 28));
+		panelItem.add(lblImagen, BorderLayout.WEST);
+
+		// Nombre, precio y contador
+		JPanel panelTexto = new JPanel(new GridLayout(3, 1));
+		panelTexto.setBackground(Color.WHITE);
+
+		JLabel lblNombre = new JLabel(nombre, SwingConstants.LEFT);
+		lblNombre.setFont(new Font("Segoe UI", Font.BOLD, 16));
+		JLabel lblPrecio = new JLabel("Precio: $" + precio, SwingConstants.LEFT);
+		lblPrecio.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+		panelTexto.add(lblNombre);
+		panelTexto.add(lblPrecio);
+
+		// ==== CONTADOR ====
+		JPanel panelCantidad = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+		panelCantidad.setBackground(Color.WHITE);
+
+		JButton btnMenos = new JButton("➖");
+		JLabel lblCantidad = new JLabel("1");
+		JButton btnMas = new JButton("➕");
+
+		btnMenos.setBackground(new Color(230, 230, 230));
+		btnMas.setBackground(new Color(230, 230, 230));
+		btnMenos.setFocusPainted(false);
+		btnMas.setFocusPainted(false);
+
+		btnMas.addActionListener(e -> {
+			int cantidad = Integer.parseInt(lblCantidad.getText());
+			lblCantidad.setText(String.valueOf(cantidad + 1));
+		});
+
+		btnMenos.addActionListener(e -> {
+			int cantidad = Integer.parseInt(lblCantidad.getText());
+			if (cantidad > 1)
+				lblCantidad.setText(String.valueOf(cantidad - 1));
+		});
+
+		panelCantidad.add(btnMenos);
+		panelCantidad.add(lblCantidad);
+		panelCantidad.add(btnMas);
+
+		panelTexto.add(panelCantidad);
+		panelItem.add(panelTexto, BorderLayout.CENTER);
+
+		// ==== BOTÓN AGREGAR ====
+		JButton btnAgregar = new JButton("Agregar al carrito 🛒");
+		btnAgregar.setBackground(new Color(255, 140, 0));
+		btnAgregar.setForeground(Color.WHITE);
+		btnAgregar.setFont(new Font("Segoe UI", Font.BOLD, 13));
+		btnAgregar.setFocusPainted(false);
+		btnAgregar.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
+
+		btnAgregar.addMouseListener(new MouseAdapter() {
+			public void mouseEntered(MouseEvent e) {
+				btnAgregar.setBackground(new Color(255, 165, 0));
+			}
+
+			public void mouseExited(MouseEvent e) {
+				btnAgregar.setBackground(new Color(255, 140, 0));
+			}
+		});
+
+		btnAgregar.addActionListener(e -> {
+			int cantidad = Integer.parseInt(lblCantidad.getText());
+			for (int i = 0; i < cantidad; i++) {
+				carrito.agregarProducto(nombre + " - $" + precio);
+			}
+			JOptionPane.showMessageDialog(this, cantidad + " " + nombre + "(s) agregado(s) al carrito ✅");
+		});
+
+		panelItem.add(btnAgregar, BorderLayout.EAST);
+		panel.add(panelItem);
+	}
+
+	// === MAIN TEMPORAL PARA PRUEBA ===
+	public static void main(String[] args) {
+		EventQueue.invokeLater(() -> {
+			try {
+				China frame = new China();
+				frame.setVisible(true);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		});
+	}
+}
