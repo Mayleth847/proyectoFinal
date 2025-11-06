@@ -1,0 +1,114 @@
+package Menu;
+
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+
+
+import Comida.*;   
+import Carrito.*;  
+
+public class MenuPrincipal extends JFrame {
+
+    private static final long serialVersionUID = 1L;
+    private JPanel contentPane;
+
+    public MenuPrincipal() {
+        setTitle("🍟 La Casa del Snack - Menú Principal");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setBounds(100, 100, 600, 400);
+        setLocationRelativeTo(null);
+
+        // === PANEL PRINCIPAL ===
+        contentPane = new JPanel();
+        contentPane.setBorder(new EmptyBorder(10, 10, 10, 10));
+        contentPane.setBackground(new Color(255, 245, 230)); // fondo beige claro
+        contentPane.setLayout(new BorderLayout(10, 10));
+        setContentPane(contentPane);
+
+        // === LOGO ===
+        JLabel lblLogo = new JLabel("🍔 LA CASA DEL SNACK 🍟", SwingConstants.CENTER);
+        lblLogo.setFont(new Font("Arial Black", Font.BOLD, 20));
+        lblLogo.setForeground(new Color(200, 60, 0));
+        contentPane.add(lblLogo, BorderLayout.NORTH);
+
+        // === BOTONES DE COMIDA ===
+        JPanel panelBotones = new JPanel(new GridLayout(2, 3, 15, 15));
+        panelBotones.setOpaque(false);
+        contentPane.add(panelBotones, BorderLayout.CENTER);
+
+        JButton btnAmericana = new JButton("🍔 Americana");
+        JButton btnMexicana = new JButton("🌮 Mexicana");
+        JButton btnJaponesa = new JButton("🍣 Japonesa");
+        JButton btnChina = new JButton("🥢 China");
+        JButton btnItaliana = new JButton("🍝 Italiana");
+        JButton btnCarrito = new JButton("🛒 Ver Carrito");
+
+        Font btnFont = new Font("Segoe UI", Font.BOLD, 14);
+        JButton[] botones = {btnAmericana, btnMexicana, btnJaponesa, btnChina, btnItaliana, btnCarrito};
+
+        for (JButton b : botones) {
+            b.setFont(btnFont);
+            b.setFocusPainted(false);
+            b.setBackground(new Color(255, 220, 180));
+            b.setBorder(BorderFactory.createLineBorder(new Color(180, 100, 60), 2));
+
+            // efecto hover
+            b.addMouseListener(new MouseAdapter() {
+                public void mouseEntered(MouseEvent e) {
+                    b.setBackground(new Color(255, 200, 150));
+                }
+                public void mouseExited(MouseEvent e) {
+                    b.setBackground(new Color(255, 220, 180));
+                }
+            });
+
+            panelBotones.add(b);
+        }
+
+        // === EVENTOS DE BOTONES ===
+        btnAmericana.addActionListener(e -> {
+            dispose();
+            new Americana().setVisible(true);
+        });
+
+        btnMexicana.addActionListener(e -> {
+            dispose();
+            new Mexicana().setVisible(true);
+        });
+
+        btnJaponesa.addActionListener(e -> {
+            dispose();
+            new Japonesa().setVisible(true);
+        });
+
+        btnChina.addActionListener(e -> {
+            dispose();
+            new China().setVisible(true);
+        });
+
+        btnItaliana.addActionListener(e -> {
+            dispose();
+            new Italiana().setVisible(true);
+        });
+
+        btnCarrito.addActionListener(e -> {
+            dispose();
+            new VentanaCarrito().setVisible(true);
+        });
+
+        };
+
+    // === MAIN PARA PRUEBA ===
+    public static void main(String[] args) {
+        EventQueue.invokeLater(() -> {
+            try {
+                MenuPrincipal frame = new MenuPrincipal();
+                frame.setVisible(true);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+}
