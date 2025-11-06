@@ -1,0 +1,134 @@
+package Carrito;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
+import java.awt.event.*;
+import Menu.MenuPrincipal;
+
+public class VentanaCarrito extends JFrame {
+
+    private static final long serialVersionUID = 1L;
+    private JPanel contentPane;
+    private JList<String> listaProductos;
+    private DefaultListModel<String> modeloLista;
+    private BaseDeDatos carrito = BaseDeDatos.getInstancia();
+
+    public VentanaCarrito() {
+        setTitle("🛒 Carrito de Compras - La Casa del Snack");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setBounds(100, 100, 600, 450);
+        setLocationRelativeTo(null);
+
+        contentPane = new JPanel();
+        contentPane.setBackground(new Color(255, 250, 240));
+        contentPane.setBorder(new EmptyBorder(15, 15, 15, 15));
+        contentPane.setLayout(new BorderLayout(10, 10));
+        setContentPane(contentPane);
+
+        // === TÍTULO ===
+        JLabel lblTitulo = new JLabel("🛍️ Tu Carrito de Compras", SwingConstants.CENTER);
+        lblTitulo.setFont(new Font("Arial Black", Font.BOLD, 20));
+        lblTitulo.setForeground(new Color(200, 60, 0));
+        contentPane.add(lblTitulo, BorderLayout.NORTH);
+
+        // === LISTA DE PRODUCTOS ===
+        modeloLista = new DefaultListModel<>();
+        actualizarLista();
+
+        listaProductos = new JList<>(modeloLista);
+        listaProductos.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        listaProductos.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        JScrollPane scrollPane = new JScrollPane(listaProductos);
+        contentPane.add(scrollPane, BorderLayout.CENTER);
+
+        // === PANEL DE BOTONES ===
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
+        panelBotones.setBackground(new Color(255, 250, 240));
+        contentPane.add(panelBotones, BorderLayout.SOUTH);
+
+        JButton btnEliminar = new JButton("🗑️ Eliminar seleccionado");
+        JButton btnComprar = new JButton("💳 Comprar");
+        JButton btnVolver = new JButton("⬅ Volver al Menú");
+
+        JButton[] botones = {btnEliminar, btnComprar, btnVolver};
+        for (JButton b : botones) {
+            b.setFocusPainted(false);
+            b.setFont(new Font("Segoe UI", Font.BOLD, 14));
+            b.setBackground(new Color(255, 140, 0));
+            b.setForeground(Color.WHITE);
+            b.setBorder(BorderFactory.createEmptyBorder(8, 16, 8, 16));
+
+            b.addMouseListener(new MouseAdapter() {
+                public void mouseEntered(MouseEvent e) {
+                    b.setBackground(new Color(255, 165, 0));
+                }
+                public void mouseExited(MouseEvent e) {
+                    b.setBackground(new Color(255, 140, 0));
+                }
+            });
+            panelBotones.add(b);
+        }
+
+        // === EVENTOS ===
+        btnEliminar.addActionListener(e -> eliminarSeleccionado());
+        btnComprar.addActionListener(e -> comprarTodo());
+        btnVolver.addActionListener(e -> {
+            dispose();
+            new MenuPrincipal().setVisible(true);
+        });
+    }
+
+    // ==== ACTUALIZA LA LISTA VISUAL ====
+    private void actualizarLista() {
+        modeloLista.clear();
+        for (String producto : carrito.getProductos()) {
+            modeloLista.addElement(producto);
+        }
+    }
+
+    // ==== ELIMINAR UN PRODUCTO ====
+    private void eliminarSeleccionado() {
+        int indice = listaProductos.getSelectedIndex();
+        if (indice >= 0) {
+            String producto = modeloLista.getElementAt(indice);
+            carrito.eliminarProducto(producto);
+            actualizarLista();
+            JOptionPane.showMessageDialog(this, producto + " eliminado del carrito ❌");
+        } else {
+            JOptionPane.showMessageDialog(this, "Selecciona un producto para eliminar.");
+        }
+    }
+
+    // ==== COMPRAR ====
+    private void comprarTodo() {
+        if (carrito.estaVacio()) {
+            JOptionPane.showMessageDialog(this, "El carrito está vacío 🛒");
+            return;
+        }
+
+        int confirmar = JOptionPane.showConfirmDialog(this, 
+                "¿Deseas finalizar la compra?", 
+                "Confirmar compra", 
+                JOptionPane.YES_NO_OPTION);
+
+        if (confirmar == JOptionPane.YES_OPTION) {
+            carrito.vaciarCarrito();
+            actualizarLista();
+            JOptionPane.showMessageDialog(this, "Gracias por su compra ❤️\n¡Vuelva pronto!");
+            System.exit(0); // ✅ Cierra el programa completamente
+        }
+    }
+
+    // === MAIN PARA PRUEBA ===
+    public static void main(String[] args) {
+        EventQueue.invokeLater(() -> {
+            try {
+                VentanaCarrito frame = new VentanaCarrito();
+                frame.setVisible(true);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+}
