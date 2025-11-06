@@ -1,0 +1,160 @@
+package Comida;
+
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import Carrito.BaseDeDatos;
+import Menu.MenuPrincipal; // ✅ Import necesario para regresar al menú
+
+public class Americana extends JFrame {
+
+    private static final long serialVersionUID = 1L;
+    private JPanel contentPane;
+    private BaseDeDatos carrito = BaseDeDatos.getInstancia(); // acceder al carrito global
+
+    public Americana() {
+        setTitle("Comida Americana - LaCasaDelSnack");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setBounds(100, 100, 700, 500);
+        setLocationRelativeTo(null);
+
+        // ==== PANEL PRINCIPAL ====
+        contentPane = new JPanel();
+        contentPane.setBackground(Color.WHITE);
+        contentPane.setBorder(new EmptyBorder(15, 15, 15, 15));
+        contentPane.setLayout(new BorderLayout(10, 10));
+        setContentPane(contentPane);
+
+        // ==== PANEL DE COMIDAS ====
+        JPanel panelComidas = new JPanel();
+        panelComidas.setBackground(Color.WHITE);
+        panelComidas.setLayout(new GridLayout(5, 1, 15, 15)); // una fila por platillo
+        contentPane.add(panelComidas, BorderLayout.CENTER);
+
+        // ==== CREAR BOTONES DE PLATILLOS ====
+        agregarPlatillo(panelComidas, "Hamburguesa clásica", "🍔", 85);
+        agregarPlatillo(panelComidas, "Hotdog", "🌭", 40);
+        agregarPlatillo(panelComidas, "Papas fritas", "🍟", 35);
+        agregarPlatillo(panelComidas, "Nuggets de pollo (6 pzas)", "🍗", 60);
+        agregarPlatillo(panelComidas, "Pizza individual", "🍕", 90);
+
+        // ==== BOTÓN REGRESAR ====
+        JPanel panelInferior = new JPanel();
+        panelInferior.setBackground(Color.WHITE);
+        JButton btnRegresar = new JButton("⬅ Regresar al Menú");
+        btnRegresar.setBackground(new Color(255, 140, 0)); // naranja
+        btnRegresar.setForeground(Color.WHITE);
+        btnRegresar.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnRegresar.setFocusPainted(false);
+        btnRegresar.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+
+        btnRegresar.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) {
+                btnRegresar.setBackground(new Color(255, 165, 0));
+            }
+            public void mouseExited(MouseEvent e) {
+                btnRegresar.setBackground(new Color(255, 140, 0));
+            }
+        });
+
+        // ✅ Regresa correctamente al menú
+        btnRegresar.addActionListener(e -> {
+            dispose(); // cierra esta ventana
+            new MenuPrincipal().setVisible(true); // abre el menú principal sin cerrar el programa
+        });
+
+        panelInferior.add(btnRegresar);
+        contentPane.add(panelInferior, BorderLayout.SOUTH);
+    }
+
+    // ==== MÉTODO PARA CREAR UN PLATILLO ====
+    private void agregarPlatillo(JPanel panel, String nombre, String icono, double precio) {
+        JPanel panelItem = new JPanel(new BorderLayout(10, 10));
+        panelItem.setBackground(Color.WHITE);
+        panelItem.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+
+        // Imagen o ícono a la izquierda
+        JLabel lblImagen = new JLabel(icono, SwingConstants.CENTER);
+        lblImagen.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 28));
+        panelItem.add(lblImagen, BorderLayout.WEST);
+
+        // Nombre y precio en el centro
+        JPanel panelTexto = new JPanel(new GridLayout(3, 1));
+        panelTexto.setBackground(Color.WHITE);
+        JLabel lblNombre = new JLabel(nombre, SwingConstants.LEFT);
+        lblNombre.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        JLabel lblPrecio = new JLabel("Precio: $" + precio, SwingConstants.LEFT);
+        lblPrecio.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        panelTexto.add(lblNombre);
+        panelTexto.add(lblPrecio);
+
+        // ==== CONTADOR DE CANTIDAD ====
+        JPanel panelCantidad = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        panelCantidad.setBackground(Color.WHITE);
+
+        JButton btnMenos = new JButton("➖");
+        JLabel lblCantidad = new JLabel("1");
+        JButton btnMas = new JButton("➕");
+
+        btnMenos.setBackground(new Color(230, 230, 230));
+        btnMas.setBackground(new Color(230, 230, 230));
+        btnMenos.setFocusPainted(false);
+        btnMas.setFocusPainted(false);
+
+        btnMas.addActionListener(e -> {
+            int cantidad = Integer.parseInt(lblCantidad.getText());
+            lblCantidad.setText(String.valueOf(cantidad + 1));
+        });
+
+        btnMenos.addActionListener(e -> {
+            int cantidad = Integer.parseInt(lblCantidad.getText());
+            if (cantidad > 1) lblCantidad.setText(String.valueOf(cantidad - 1));
+        });
+
+        panelCantidad.add(btnMenos);
+        panelCantidad.add(lblCantidad);
+        panelCantidad.add(btnMas);
+        panelTexto.add(panelCantidad);
+
+        panelItem.add(panelTexto, BorderLayout.CENTER);
+
+        // ==== BOTÓN AGREGAR ====
+        JButton btnAgregar = new JButton("Agregar al carrito 🛒");
+        btnAgregar.setBackground(new Color(255, 140, 0));
+        btnAgregar.setForeground(Color.WHITE);
+        btnAgregar.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnAgregar.setFocusPainted(false);
+        btnAgregar.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
+
+        btnAgregar.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) {
+                btnAgregar.setBackground(new Color(255, 165, 0));
+            }
+            public void mouseExited(MouseEvent e) {
+                btnAgregar.setBackground(new Color(255, 140, 0));
+            }
+        });
+
+        btnAgregar.addActionListener(e -> {
+            int cantidad = Integer.parseInt(lblCantidad.getText());
+            carrito.agregarProducto(nombre + " x" + cantidad + " - $" + (precio * cantidad));
+            JOptionPane.showMessageDialog(this, cantidad + " × " + nombre + " agregado(s) al carrito ✅");
+        });
+
+        panelItem.add(btnAgregar, BorderLayout.EAST);
+        panel.add(panelItem);
+    }
+
+    // === MAIN TEMPORAL PARA PROBAR ===
+    public static void main(String[] args) {
+        EventQueue.invokeLater(() -> {
+            try {
+                Americana frame = new Americana();
+                frame.setVisible(true);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+}
