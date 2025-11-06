@@ -1,0 +1,52 @@
+package Carrito;
+
+import java.util.ArrayList;
+import java.util.List;
+
+
+public class BaseDeDatos {
+
+    // Lista que almacena los productos seleccionados
+    private List<String> productos;
+
+    // Instancia única (Singleton)
+    private static BaseDeDatos instancia = null;
+
+    // Constructor privado (solo se crea una vez)
+    private BaseDeDatos() {
+        productos = new ArrayList<>();
+    }
+
+    // Método para obtener la instancia única
+    public static BaseDeDatos getInstancia() {
+        if (instancia == null) {
+            instancia = new BaseDeDatos();
+        }
+        return instancia;
+    }
+
+    // Agregar producto
+    public void agregarProducto(String producto) {
+        productos.add(producto);
+    }
+
+    // Eliminar producto
+    public void eliminarProducto(String producto) {
+        productos.remove(producto);
+    }
+
+    // Vaciar carrito
+    public void vaciarCarrito() {
+        productos.clear();
+    }
+
+    // Obtener todos los productos
+    public List<String> getProductos() {
+        return productos;
+    }
+
+    // Saber si el carrito está vacío
+    public boolean estaVacio() {
+        return productos.isEmpty();
+    }
+}
